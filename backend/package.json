@@ -1,0 +1,26 @@
+{
+  "name": "order-execution-engine",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "worker": "ts-node-dev --respawn src/queue/order.worker.ts"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^9.0.0",
+    "bullmq": "^4.0.0",
+    "dotenv": "^16.0.0",
+    "fastify": "^4.0.0",
+    "ioredis": "^5.0.0",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.6",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
