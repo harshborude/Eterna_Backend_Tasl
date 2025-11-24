@@ -6,11 +6,14 @@ import { MockDexRouter } from "../services/dex.service";
 import { OrderPayload } from "../types";
 
 // FIXED: Added maxRetriesPerRequest: null
-const connection = new IORedis({
-  host: env.redisHost,
-  port: env.redisPort,
-  maxRetriesPerRequest: null,
-});
+// UPDATED: Use URL if available
+const connection = env.redisUrl 
+  ? new IORedis(env.redisUrl, { maxRetriesPerRequest: null })
+  : new IORedis({
+      host: env.redisHost,
+      port: env.redisPort,
+      maxRetriesPerRequest: null,
+    });
 
 const dex = new MockDexRouter();
 

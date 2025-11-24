@@ -5,10 +5,12 @@ import { env } from "../config/env";
 
 export async function registerOrderWebsocket(app: FastifyInstance, opts: FastifyPluginOptions) {
 
-  const subscriber = new IORedis({
-    host: env.redisHost,
-    port: env.redisPort,
-  });
+  const subscriber = env.redisUrl 
+    ? new IORedis(env.redisUrl)
+    : new IORedis({
+        host: env.redisHost,
+        port: env.redisPort,
+      });
 
   app.get(
     "/ws/orders/:orderId",
