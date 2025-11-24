@@ -1,0 +1,82 @@
+{
+  "info": {
+    "_postman_id": "a1f2d2c3-1234-4567-89ab-001122334455",
+    "name": "Order Execution Engine",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "postman"
+  },
+  "item": [
+    {
+      "name": "1️⃣ Create Market Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/orders/execute",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "execute"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"inputToken\": \"SOL\",\n  \"outputToken\": \"USDC\",\n  \"amount\": 1,\n  \"userId\": \"test-user\"\n}"
+        },
+        "description": "Creates a new market order.\n\nResponse returns an **orderId**, which must be copied into environment variable `orderId`."
+      },
+      "response": []
+    },
+    {
+      "name": "2️⃣ WebSocket – Subscribe to Order Updates",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save orderId from WS messages (optional)",
+              "console.log('WebSocket connected');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "ws://localhost:3000/ws/orders/{{orderId}}",
+          "protocol": "ws",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["ws", "orders", "{{orderId}}"]
+        },
+        "description": "Connects to WebSocket to receive **real-time order execution events**.\n\nExpected messages:\n- routing\n- building\n- submitted\n- confirmed\n- failed"
+      }
+    },
+    {
+      "name": "3️⃣ Example: Invalid Order Validation Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/orders/execute",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "execute"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"inputToken\": \"SOL\"\n}"
+        },
+        "description": "Used to test the validation logic. Should return **400 Bad Request**."
+      },
+      "response": []
+    }
+  ]
+}

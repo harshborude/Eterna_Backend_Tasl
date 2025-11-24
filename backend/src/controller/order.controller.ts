@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { OrderService } from "../services/order.service";
+import {WebSocket} from "ws";
 
 export const OrderController = {
   async createOrder(req: FastifyRequest, reply: FastifyReply) {
@@ -23,7 +24,14 @@ export const OrderController = {
     }
   },
 
-  async orderWebsocket(connection: any, req: any) {
-    connection.socket.send("WS connected (placeholder)");
-  }
+  //  orderWebsocket(socket: WebSocket, req: FastifyRequest) {
+  //   console.log("📡 Client connected:", req.params);
+
+  //   socket.send("WS connection established");
+
+  //   // Keep socket alive (optional)
+  //   socket.on("close", () => {
+  //     console.log("🔌 WebSocket client disconnected");
+  //   });
+  // }
 };

@@ -9,43 +9,34 @@ export const OrderService = {
     amount: number;
     userId: string;
   }) {
-    // Basic validation
-    if (
-  input.inputToken == null ||
-  input.outputToken == null ||
-  input.userId == null ||
-  input.amount == null
-) {
-  throw new Error("Missing required fields");
-}
+    // Validate fields
+    if (!input.inputToken?.trim()) throw new Error("inputToken is required");
+    if (!input.outputToken?.trim()) throw new Error("outputToken is required");
+    if (!input.userId?.trim()) throw new Error("userId is required");
+    if (input.amount == null || input.amount <= 0)
+      throw new Error("Amount must be greater than zero");
 
-// Now validate amount correctly
-if (input.amount <= 0) {
-  throw new Error("Amount must be greater than zero");
-}
-
-    // Generate unique order ID
+    // Unique order ID
     const orderId = uuidv4();
 
-    // Save to DB
-   const order = await OrderModel.createOrder({
-  orderId,
-  userId: input.userId,
-  inputToken: input.inputToken,
-  outputToken: input.outputToken,
-  amount: input.amount,
-});
+    // Create database order
+    const order = await OrderModel.createOrder({
+      orderId,
+      userId: input.userId,
+      inputToken: input.inputToken,
+      outputToken: input.outputToken,
+      amount: input.amount,
+    });
 
-// Push job to queue
-await orderQueue.add("execute", {
-  orderId,
-  inputToken: input.inputToken,
-  outputToken: input.outputToken,
-  amount: input.amount,
-  userId: input.userId
-});
+    // Add to queue
+    await orderQueue.add("execute", {
+      orderId,
+      inputToken: input.inputToken,
+      outputToken: input.outputToken,
+      amount: input.amount,
+      userId: input.userId,
+    });
 
-return order;
-
-  }
+    return order;
+  },
 };

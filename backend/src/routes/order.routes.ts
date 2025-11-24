@@ -7,5 +7,7 @@ export async function registerOrderRoutes(app: FastifyInstance) {
   app.post("/execute", OrderController.createOrder);
 
   // GET /api/orders/ws/:orderId  (WebSocket will be added later)
-  app.get("/ws/:orderId", { websocket: true }, OrderController.orderWebsocket);
+  // app.get("/ws/:orderId", { websocket: true }, OrderController.orderWebsocket);
+
+
 }
