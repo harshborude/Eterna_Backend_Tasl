@@ -3,39 +3,42 @@ import { env } from "../config/env";
 import { OrderModel } from "../models/order.model";
 import { OrderStatus } from "../types";
 
-const pub = new IORedis({
+// Separate Redis connection for PubSub (BullMQ cannot reuse this one)
+const redisPub = new IORedis({
   host: env.redisHost,
   port: env.redisPort,
 });
 
 export const StatusService = {
-  /**
-   * Emit status update to WebSocket clients + update DB
-   */
-  async emit(orderId: string, status: OrderStatus, message: string, extra?: {
-    txHash?: string;
-    executionPrice?: number;
-    chosenDex?: string;
-  }) {
+  async emit(
+    orderId: string, 
+    status: OrderStatus, 
+    message: string, 
+    extraData: any = {}
+  ) {
+    // 1. Prepare the payload
     const payload = {
       orderId,
       status,
-      message,
-      ...extra
+      message, // Single string for frontend
+      ...extraData
     };
 
-    // 1. Publish to Redis Pub/Sub (WS will pick this up)
-    await pub.publish(`updates:${orderId}`, JSON.stringify(payload));
+    // 2. Publish to Redis (for WebSocket)
+    // Channel: updates:<orderId>
+    await redisPub.publish(`updates:${orderId}`, JSON.stringify(payload));
 
-    // 2. Update order in database
+    // 3. Persist to Database
+    // CRITICAL FIX: We wrap 'message' in an array [message] 
+    // This satisfies the postgres query: logs = array_cat(logs, $2::text[])
     await OrderModel.updateOrder(orderId, {
       status,
-      logs: [message],
-      txHash: extra?.txHash,
-      executionPrice: extra?.executionPrice,
-      chosenDex: extra?.chosenDex,
+      logs: [message], 
+      txHash: extraData.txHash,
+      executionPrice: extraData.executionPrice,
+      chosenDex: extraData.chosenDex
     });
-
-    console.log(`[${orderId}] ${status.toUpperCase()}: ${message}`);
+    
+    console.log(`[${status.toUpperCase()}] Order ${orderId}: ${message}`);
   }
 };

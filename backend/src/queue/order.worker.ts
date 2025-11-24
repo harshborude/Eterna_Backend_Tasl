@@ -5,12 +5,13 @@ import { StatusService } from "../services/status.service";
 import { MockDexRouter } from "../services/dex.service";
 import { OrderPayload } from "../types";
 
+// FIXED: Added maxRetriesPerRequest: null
 const connection = new IORedis({
   host: env.redisHost,
   port: env.redisPort,
+  maxRetriesPerRequest: null,
 });
 
-// mock DEX router instance
 const dex = new MockDexRouter();
 
 export const orderWorker = new Worker(
@@ -51,7 +52,7 @@ export const orderWorker = new Worker(
 
     } catch (err: any) {
       await StatusService.emit(orderId, "failed", err.message || "Unknown error");
-      throw err; // lets BullMQ retry the job automatically
+      throw err; 
     }
   },
   {
@@ -64,7 +65,6 @@ export const orderWorker = new Worker(
   }
 );
 
-// optional logging
 orderWorker.on("completed", job => {
   console.log(`✓ Job ${job.id} completed`);
 });
